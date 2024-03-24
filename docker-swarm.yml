@@ -11,7 +11,7 @@ services:
     - db
     - cache
     networks:
-    - test
+    - swarm
   web:
     image: welldecode/pro:v1
     networks:
