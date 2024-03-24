@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   web:
-    image: welldecode/php-pronew:latest
+    image: welldecode/pro:v1
     networks:
       - swarm
     volumes:
