@@ -3,13 +3,13 @@ services:
   app:
     build:
       context: ./docker/php_fpm
-      args:
-      - TZ=Asia/Tokyo
     volumes:
     - ./:/var/www
     links:
     - db
-    - cache
+    - mysql
+    - web
+    - redis
     networks:
     - swarm
   web:
