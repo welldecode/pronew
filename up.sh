@@ -1,1 +1,1 @@
-docker stack deploy -c docker-swarm.yml application
+docker stack deploy -c docker-swarm.yml app
