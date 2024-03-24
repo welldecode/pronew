@@ -1,5 +1,5 @@
 version: "3.9"
-services: 
+services:
   web:
     image: welldecode/pro:v1
     networks:
@@ -50,14 +50,6 @@ services:
           memory: 20M
       restart_policy:
         condition: on-failure
-
-  phpmyadmin:
-    image: phpmyadmin
-    restart: always
-    ports:
-    - 8080:80
-    environment:
-    - PMA_ARBITRARY=1
 
   redis:
     image: 'redis:alpine'
