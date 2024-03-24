@@ -82,10 +82,12 @@ services:
           memory: 20M
       restart_policy:
         condition: on-failure
+
 networks:
   swarm:
     external: true
     name: swarm
+    
 volumes:
     sail-mysql:
         driver: local
