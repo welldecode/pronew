@@ -23,17 +23,19 @@ services:
     - "80:80"
     - "443:443"
 
+
   mysql:
     image: 'mysql/mysql-server:8.0'
     ports:
-    - '${FORWARD_DB_PORT:-3306}:3306'
+    - '${FORWARD_DB_PORT:-3306}:3306' 
     environment:
-    - MYSQL_DATABASE=${DB_DATABASE}  // from .env file
-    - MYSQL_USER=${DB_USERNAME}  // from .env file
-    - MYSQL_PASSWORD=${DB_PASSWORD}  // from .env file
-    - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}  // from .env file
+            - MYSQL_DATABASE=${DB_DATABASE}  // from .env file
+            - MYSQL_USER=${DB_USERNAME}  // from .env file
+            - MYSQL_PASSWORD=${DB_PASSWORD}  // from .env file
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}  // from .env file 
     volumes:
-    - db-data:/var/lib/mysql
+    - 'sail-mysql:/var/lib/mysql'
+    - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
     networks:
     - swarm
     deploy:
