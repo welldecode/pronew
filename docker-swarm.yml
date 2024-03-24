@@ -1,73 +1,82 @@
 version: "3.9"
 services:
-  laravel.horizon.swoole:
-    build:
-      context: ./
-      dockerfile: Dockerfile
-      args:
-        PHP_VERSION: '8.2.7-zts-bullseye'
+  web:
     image: welldecode/pro:v1
-    extra_hosts:
-    - 'host.docker.internal:host-gateway'
-    ports:
-    - '${APP_PORT:-80}:80'
-    - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
-    environment:
-      APP_ENV: 'PRODUCTION'
-      PHP_VERSION: '8.2.7-zts-bullseye'
-    volumes:
-    - './docker/supervisord/supervisord.octane.conf:/etc/supervisor/conf.d/supervisord.conf'
-    # - '.:/var/www/app'
     networks:
-    - sail
-    depends_on:
-    - pgsql
-    - redis
-  pgsql:
-    image: 'postgres:15'
-    ports:
-    - '${FORWARD_DB_PORT:-5432}:5432'
-    environment:
-      PGPASSWORD: '${DB_PASSWORD:-secret}'
-      POSTGRES_DB: '${DB_DATABASE}'
-      POSTGRES_USER: '${DB_USERNAME}'
-      POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+    - swarm
     volumes:
-    - 'sail-pgsql:/var/lib/postgresql/data'
-    - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+    # - ./app:/var/www/app
+    - ./nginx-sites.conf:/etc/nginx/sites-enabled/default.conf
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.1"
+          memory: 20M
+      restart_policy:
+        condition: on-failure
+    ports:
+    - "80:80"
+    - "443:443"
+    
+
+  mysql:
+    image: 'mysql/mysql-server:8.0' 
+    ports:
+    - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_HOST: '${DB_HOST}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}' 
+    volumes:
+    - 'mysql_data:/var/lib/mysql'
+    - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
     networks:
-    - sail
-    healthcheck:
-      test:
-      - CMD
-      - pg_isready
-      - '-q'
-      - '-d'
-      - '${DB_DATABASE}'
-      - '-U'
-      - '${DB_USERNAME}'
-      retries: 3
-      timeout: 5s
+    - swarm
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.1"
+          memory: 20M
+      restart_policy:
+        condition: on-failure
+
   redis:
     image: 'redis:alpine'
     ports:
-    - '${FORWARD_REDIS_PORT:-6379}:6379'
+    - '6379:6379'
     volumes:
-    - 'sail-redis:/data'
+    - './redis:/data'
     networks:
-    - sail
-    healthcheck:
-      test:
-      - CMD
-      - redis-cli
-      - ping
-      retries: 3
-      timeout: 5s
+    - swarm
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.1"
+          memory: 20M
+      restart_policy:
+        condition: on-failure
+
 networks:
-  sail:
-    driver: bridge
+  swarm:
+    external: true
+    name: swarm
+
 volumes:
-  sail-pgsql:
+  sail-mysql:
     driver: local
   sail-redis:
     driver: local
