@@ -7,6 +7,8 @@ services:
     volumes:
     # - ./app:/var/www/app
     - ./nginx-sites.conf:/etc/nginx/sites-enabled/default.conf
+    depends_on:
+    - redis
     deploy:
       replicas: 1
       resources:
@@ -20,21 +22,22 @@ services:
         condition: on-failure
     ports:
     - "80:80"
-    - "3306:3306"
     - "443:443"
-    
+
+
   mysql:
     image: 'mysql/mysql-server:8.0'
     ports:
-    - '3306:3306'
+    - '${FORWARD_DB_PORT:-3306}:3306'
     environment:
       MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-      MYSQL_ROOT_HOST: '${DB_HOST}'
+      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: '${DB_DATABASE}'
       MYSQL_USER: '${DB_USERNAME}'
       MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
     volumes:
-    - 'mysql_data:/var/lib/mysql'
+    - 'sail-mysql:/var/lib/mysql'
     - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
     networks:
     - swarm
@@ -42,7 +45,7 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: "0.1"
+          cpus: "1"
           memory: 1G
         reservations:
           cpus: "0.1"
